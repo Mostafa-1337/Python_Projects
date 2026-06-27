@@ -19,7 +19,7 @@ def style_sheet(ws):
         cell.font = white_font_header
         cell.border = white_border
     for i in range(2,ws.max_row + 1):
-        for col in ["A","B","C","D","E","F", "G"]:
+        for col in ["A","B","C","D","E","F","G"]:
             cell = ws[f"{col}{i}"]
             cell.fill = back_fill
             cell.font = white_font
