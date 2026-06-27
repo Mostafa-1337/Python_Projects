@@ -19,7 +19,7 @@ def style_sheet(ws):
         cell.font = white_font_header
         cell.border = white_border
     for i in range(2,ws.max_row + 1):
-        for col in ["A","B","C","D","E","F"]:
+        for col in ["A","B","C","D","E","F", "G"]:
             cell = ws[f"{col}{i}"]
             cell.fill = back_fill
             cell.font = white_font
@@ -31,11 +31,11 @@ def style_sheet(ws):
         for cell in column:
             if len(str(cell.value)) > max_length:
                 max_length = len(str(cell.value))
-        ws.column_dimensions[column[0].column_letter].width = min(max_length + 2,50)
+        ws.column_dimensions[column[0].column_letter].width = min(max_length + 2,100)
 
 
 
-def to_excel(data,filename):
+def to_ex(data,filename):
     df = pd.DataFrame(data)
     df.to_excel(filename,index=False)
 
@@ -45,15 +45,16 @@ channel = []
 result_match = []
 time = []
 status = []
+championships = []
 
 date = input("Enter the date (MM/DD/YY): ")
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
+    browser = p.chromium.launch(headless=False)
     page = browser.new_page()
     page.goto(f"https://www.yallakora.com/matches?date={date}#days")
 
     #teamA
-    page.wait_for_selector(".icon-channel",timeout=10000)
+    page.wait_for_selector("div.title a")
     team_a = page.locator("div.teams.teamA p").all_text_contents()
     team_A.extend(team_a)
 
@@ -79,16 +80,28 @@ with sync_playwright() as p:
     get_status = page.locator("div.matchStatus span").all_text_contents()
     status.extend(get_status)
 
+    #championship
+    tourn_cards = page.locator(".matchCard").all()
+    matches_data = []
+
+    for card in tourn_cards:
+        championship_name = card.locator(".title h2").inner_text().strip()
+        t = card.locator("div.liItem").all_text_contents()
+        match_seq = len(t)
+        for get_cs in range(match_seq):
+            championships.append(championship_name)
+
+    
 
     browser.close()
 
 
-all_data = list(zip_longest(team_A, result_match, team_B, status, time, channel, fillvalue="N/A"))
 
-df = pd.DataFrame(all_data,columns=["Team 1", "Scores", "Team 2", "Status", "Time", "Channel"])
+
+all_data = list(zip_longest(championships, team_A, result_match, team_B, status, time, channel, fillvalue="N/A"))
+
+df = pd.DataFrame(all_data,columns=["Championship", "Team 1", "Scores", "Team 2", "Status", "Time", "Channel"])
 df.to_excel("matches.xlsx",index=False)
-
-#to_excel(all_data,"matches.xlsx")
 wb = load_workbook("matches.xlsx")
 ws = wb.active
 ws.title = "Matches"

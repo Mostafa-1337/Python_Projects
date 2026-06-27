@@ -51,3 +51,9 @@ pip(or pip3) install -r requirements.txt
 ## Screenshot
 
 ![Matches Output](matches_screen.png)
+
+## Screenshot's upgrade
+
+![Championship upgrade](matches_screen_2.png)
+
+# Championship data added
