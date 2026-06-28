@@ -10,4 +10,4 @@
 
 ## Screenshot
 
-![Code Output](code output.png)
+![Code Output](code_output.png)
