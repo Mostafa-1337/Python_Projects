@@ -2,6 +2,10 @@ from playwright.sync_api import sync_playwright
 import pandas as pd
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font,Border,PatternFill,Alignment,Side
+from io import BytesIO
+from openpyxl.drawing.image import Image as XLImage
+import requests
+import time
 
 
 def style_sheet(ws):
@@ -15,12 +19,15 @@ def style_sheet(ws):
         right=Side(color="E2DDD5",style="thin"),
         bottom=Side(color="E2DDD5",style="thin")
     )
+    nment = Alignment(horizontal="center")
+    nment_a = Alignment(horizontal="left", vertical="center", wrap_text=True)
     for cell in ws[1]:
         cell.fill = header_fill
         cell.font = white_font_header
         cell.border = white_border
     for i in range(2,ws.max_row + 1):
-        for col in ["A","B","C","D","E","F"]:
+        
+        for col in ["A","B","C","D","E","F","G"]:
             cell = ws[f"{col}{i}"]
             cell.fill = back_fill
             cell.font = white_font
@@ -33,12 +40,18 @@ def style_sheet(ws):
                     discount_cell.font = white_fill
             except:
                 pass
+        ws[f"A{i}"].alignment = nment_a
+        for al in ["B", "C", "D", "E", "F", "G"]:
+            al_text = ws[f"{al}{i}"]
+            al_text.alignment = nment
+
+
     for column in ws.columns:
         max_length = 0
         for cell in column:
             if len(str(cell.value)) > max_length:
                 max_length = len(str(cell.value))
-        ws.column_dimensions[column[0].column_letter].width = min(max_length + 2, 70)
+        ws.column_dimensions[column[0].column_letter].width = min(max_length + 2, 40)
 
 
 
@@ -49,6 +62,7 @@ dollar_price = []
 discounts = []
 reviews = []
 stock_left = []
+images = []
 
 search = input("Enter What do you need: ")
 start_price = input("Start Price: ")
@@ -110,7 +124,23 @@ with sync_playwright() as p:
         else:
             stock = stock_left_el.inner_text()
             stock_left.append(stock)
+        
 
+        #get image
+        img_el = page.locator("img.-fw.-fh").first
+        if img_el.count() == 0:
+            img_url = "Unknown"
+            images.append(img_url)
+        else:
+            img_url = img_el.get_attribute("src")
+            images.append(img_url)
+    
+
+
+            
+    
+
+    
         
     
     #dollar price
@@ -124,15 +154,27 @@ with sync_playwright() as p:
 
     browser.close()
 
+#images
+def add_images(ws, images):
+    for i, img_url in enumerate(images, start=2):
+        if img_url == "Unknown":
+            continue
+        response = requests.get(img_url)
+        img = XLImage(BytesIO(response.content))
+        img.width, img.height = 60, 60
+        ws.row_dimensions[i].height = 40
+        ws.add_image(img, f"G{i}")
+        time.sleep(1)
+        
+    
 
-
-#pandas
+# pandas
 data = {
     "Product" : titles,
     "Price" : prices_before,
     "Discount" : discounts,
     "Price after discount" : prices_after,
-    "Review" : review,
+    "Review" : reviews,
     "Stock left" : stock_left,
 }
 
@@ -140,6 +182,11 @@ df = pd.DataFrame(data)
 df.to_excel(r"07_jumia\Output.xlsx", index=False)
 wb = load_workbook(r"07_jumia\Output.xlsx")
 ws = wb.active
+ws["G1"] = "Image"
+# for i in range(2, ws.max_row + 1):
+#     ws[f"A{i}"].alignment = nment
+
 ws.title = "Results"
 style_sheet(ws)
+add_images(ws, images)
 wb.save(r"07_jumia\Output.xlsx")
