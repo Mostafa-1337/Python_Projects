@@ -69,7 +69,7 @@ start_price = input("Start Price: ")
 end_price = input("End Price: ")
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(headless=False)
+    browser = p.chromium.launch(headless=True)
     page = browser.new_page()
     
     page.goto(f"https://www.jumia.com.eg/catalog/?q={search}&price={start_price}-{end_price}#catalog-listing")
