@@ -1,0 +1,1 @@
+data.text-title-2.2xl:text-title-1.3xl:text-[28px].4xl:text-[32px].3xl:leading-[41px].4xl:leading-[46px]
