@@ -101,7 +101,7 @@ async def scrape_book(browser, url):
 
 async def main():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
         await page.goto("https://aqarmap.com.eg/ar/for-sale/apartment")
         links_el = (await page.locator("a.flex-shrink-0").all())[:10]
