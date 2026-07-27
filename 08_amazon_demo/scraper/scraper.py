@@ -1,7 +1,7 @@
 from playwright.async_api import async_playwright
 import asyncio
 
-semaphore = asyncio.Semaphore(15)
+semaphore = asyncio.Semaphore(3)
 
 #lists
 urls = []
@@ -68,7 +68,7 @@ async def scrape_book(browser, url):
 
 async def main():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto("https://www.amazon.eg/s?k=iphone&language=en_AE&crid=26SVEFHUGPNEJ&sprefix=sams%2Caps%2C141&ref=nb_sb_ss_mvt-t11-ranker_2_4")
         links_el = (await page.locator("a.a-link-normal.s-no-outline").all())[:10]
