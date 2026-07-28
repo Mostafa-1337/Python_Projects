@@ -2,7 +2,7 @@ from playwright.async_api import async_playwright
 import asyncio
 import re
 
-semaphore = asyncio.Semaphore(2)
+semaphore = asyncio.Semaphore(5)
 
 urls = []
 locations_and_titles = []
